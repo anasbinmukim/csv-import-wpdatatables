@@ -30,7 +30,7 @@ function csv_import_check_validation_csv_vs_table($data_file, $table_name){
 		$output['data_table'] = $table_name;
 		$output['status'] = '';
 
-		$home_url = home_url('/');
+		$home_url = home_url('/', 'https');
 		$data_source = str_replace($home_url, ABSPATH, $data_file);
 
 

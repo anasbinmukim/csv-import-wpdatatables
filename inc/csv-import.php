@@ -3,10 +3,7 @@
 
 <form action="" method="post">
 
-
 	<div class="button_wrap">
-
-
 
 	<?php if(isset($_POST['check_upload']) && isset($_POST['process_csv_file']) && isset($_POST['wp_datatables_table'])){ ?>
 		<?php
@@ -84,6 +81,36 @@
 //https://github.com/parsecsv/parsecsv-for-php
 
 //$data_source = CSVIWPTABLES_ROOT . '/inc/Rates_Future.csv';
+
+// echo $data_source;
+//
+// echo "<br />";
+//
+//
+// $home_url = home_url('/', 'https');
+// echo $home_url;
+// echo "<br />";
+// $data_file = 'https://benefitlink.staging.wpengine.com/wp-content/uploads/2018/08/Underwriting_Conditions.csv';
+// $data_source = str_replace($home_url, ABSPATH, $data_file);
+//
+// echo $data_source;
+//
+// echo "<br />";
+//
+// echo ABSPATH;
+//
+// $csv = new ParseCsv\Csv();
+//
+// # offset from the beginning of the file,
+// # ignoring the first X number of rows.
+// $csv->offset = 0;
+//
+// # limit the number of returned rows.
+// $csv->limit = 1;
+//
+// $csv->auto($data_source);
+//
+// debug($csv->data);
 
 
 ?>
