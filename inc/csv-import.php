@@ -9,6 +9,11 @@
 		<?php
 		$data_file = $_POST['process_csv_file'];
 		$table_name = $_POST['wp_datatables_table'];
+
+		$start_row_number = $_POST['start_row_number'];
+
+		$row_per_request = $_POST['row_per_request'];
+		$last_row_number = $_POST['last_row_number'];
 		?>
 
 		<p>Select Tables: <?php get_wpdatables_tables_dropdown($table_name); ?></p>
@@ -26,7 +31,7 @@
 			if(isset($check_upload['status']) && ($check_upload['status'] == 'yes')){
 				echo '<h2>Click below button to import csv '.$csv_file_name.' to '.$check_upload['msg'].' datatable</h2>';
 			?>
-			<a data-row_offset="0" data-row_limit="99" data-csv_file="<?php echo $check_upload['csv_file']; ?>"  data-put_table_name="<?php echo $check_upload['data_table']; ?>" class="button-upload-process button button-primary" href="javascript:void(0)">Run Import</a>
+			<a data-row_offset="<?php echo $start_row_number; ?>" data-row_limit="<?php echo $row_per_request; ?>" data-last_row="<?php echo $last_row_number; ?>" data-csv_file="<?php echo $check_upload['csv_file']; ?>"  data-put_table_name="<?php echo $check_upload['data_table']; ?>" class="button-upload-process button button-primary" href="javascript:void(0)">Run Import</a>
 		<?php }else{ ?>
 			<?php echo '<h2>'.$check_upload['msg'].'</h2>'; ?>
 		<?php } ?>
@@ -36,6 +41,18 @@
 				<input type="text" name="process_csv_file" value="" class="regular-text process_csv_file" id="process_csv_file">
 				<button class="set_csv_file button">Browse CSV</button>
 		</p>
+		<p>
+			Start Row Number: <input type="text" name="start_row_number" value="1" /><br />
+			<small>CSV col + 1. Ex: 20 mean csv col number 21</small>
+		</p>
+		<p>
+			Per Request: <input type="text" name="row_per_request" value="500" /><br />
+			<small>Import rows for every segment of call.</small>
+		</p>
+		<p>
+			Last Row Number: <input type="text" name="last_row_number" value="-1" /><br />
+			<small>Use to terminate operation. -1 mean all rows.</small>
+		</p>
 		<input type="submit" name="check_upload" class="button button-primary" value="Upload">
 	<?php } ?>
 	</div>
@@ -44,7 +61,7 @@
 </form>
 <style>
 .loading-icon{ font-size: 24px; }
-.import-activity-box{ max-width: 500px; text-align: center; height: 500px; overflow: scroll; display: none;}
+.import-activity-box{ max-width: 600px; text-align: center; height: 500px; overflow: scroll; display: none;}
 .import-activity-message{
 	border: 1px solid #dadada;
 }
@@ -145,6 +162,7 @@
 								csv_file: jQuery(this).data('csv_file'),
 								row_offset: jQuery(this).data('row_offset'),
 								row_limit: jQuery(this).data('row_limit'),
+								last_row: jQuery(this).data('last_row'),
                 security: '<?php echo $csvdata_nonce; ?>',
 				        action: 'send-csv-import-wpdatables-data'
             };
@@ -162,7 +180,7 @@
 										//alert(data.msg);
 										if(data.msg == 'Complete'){
 											//alert(data.test);
-											if(data.count_rows > 0){
+											if((data.count_rows > 0) && ((data.last_added_row <= data.last_row) || (data.last_row == '-1'))){
 													var msg_data_added = '<li>'+ data.import_msg + '</li>';
 
 													jQuery('.import-activity-message').prepend(msg_data_added);
@@ -172,6 +190,7 @@
 															csv_file: data.csv_file,
 															row_offset: data.offset,
 															row_limit: data.limit,
+															last_row: data.last_row,
 															security: '<?php echo $csvdata_nonce; ?>',
 															action: 'send-csv-import-wpdatables-data'
 													};
@@ -180,6 +199,9 @@
 														import_csv_data(newDataContainer);
 													}, 100);
 											}else{
+												var msg_data_added = '<li>'+ data.import_msg + '</li>';
+
+												jQuery('.import-activity-message').prepend(msg_data_added);
 												jQuery('.import-progressing').delay(30).fadeOut('slow');
 												jQuery('.import-activity-message').prepend('<li class="complete">All data have been successfully imported!</li>');
 											}

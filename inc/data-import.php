@@ -3,6 +3,8 @@
 **Data
 **/
 function csv_import_wpdatables_data_data() {
+  date_default_timezone_set("America/Detroit");
+
   $row_offset = 0;
   $row_limit  = 0;
 	if (!check_ajax_referer( 'csvdata_nonce', 'security' )) {
@@ -12,6 +14,7 @@ function csv_import_wpdatables_data_data() {
 
     $row_offset = intval($_POST['row_offset']);
     $row_limit = intval($_POST['row_limit']);
+    $last_row = intval($_POST['last_row']);
     $put_table_name = sanitize_text_field($_POST['put_table_name']);
     $csv_file = sanitize_text_field($_POST['csv_file']);
 
@@ -19,12 +22,11 @@ function csv_import_wpdatables_data_data() {
     //$data_source = CSVIWPTABLES_ROOT . '/inc/Rates_Future.csv';
     //$data_source = CSVIWPTABLES_ROOT . '/inc/Rates_Current_MA_MN_WI.csv';
 
-    $home_url = home_url('/');
+    $home_url = home_url('/', CSVIWPTABLESHTTP);
 		$data_source = str_replace($home_url, ABSPATH, $csv_file);
 
 
     $csv = new ParseCsv\Csv();
-
 
     # offset from the beginning of the file,
     # ignoring the first X number of rows.
@@ -67,17 +69,21 @@ function csv_import_wpdatables_data_data() {
 
     //New offset
     $row_new_offset = 0;
-    $row_new_offset = $action_total_rows + $row_offset + 1;
+    //$row_new_offset = $action_total_rows + $row_offset + 1;
+    $row_new_offset = $row_offset + $row_limit;
 
     $rows_added_count = 0;
-    $rows_added_count = $action_total_rows + $row_offset;
+    //$rows_added_count = $action_total_rows + $row_offset;
+    $rows_added_count = $row_offset + $row_limit;
+
+    $current_time = date("H:i:s");
 
     $data_import_msg = '';
-    $data_import_msg = $row_offset .' to '. $rows_added_count .' rows successfully added to table '. $put_table_name;
+    $data_import_msg = $row_offset .' to '. $rows_added_count .' rows successfully added to table '. $put_table_name.' ( '.$current_time.' ) TR( '. $action_total_rows .' )';
 
 
 
-		echo json_encode(array("test" => $data_arr, "msg" => "Complete", "import_msg" => $data_import_msg, "total_rows" => $total_rows, "count_rows" => $action_total_rows, "offset" => $row_new_offset, "limit" => $row_limit, "datatable" => $put_table_name, "csv_file" => $csv_file));
+		echo json_encode(array("test" => $data_arr, "msg" => "Complete", "import_msg" => $data_import_msg, "total_rows" => $total_rows, "count_rows" => $action_total_rows, "offset" => $row_new_offset, "limit" => $row_limit, "last_row" => $last_row, "last_added_row" => $rows_added_count, "datatable" => $put_table_name, "csv_file" => $csv_file));
 		exit;
 	}
 

@@ -29,7 +29,7 @@ class CSVImportWPDatables {
 		define( 'CSVIWPTABLES', __FILE__ );
 		define('CSVIWPTABLES_ROOT', dirname(__FILE__));
 		define( 'CSVIWPTABLES_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
-
+		define( 'CSVIWPTABLESHTTP', 'https' );
 		// Actions
     add_action( 'plugins_loaded', array( $this, 'init' ), 0 );
     add_action( 'admin_menu', array( $this, 'admin_settings_menu' ) );
