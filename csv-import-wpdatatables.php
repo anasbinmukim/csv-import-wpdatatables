@@ -4,7 +4,7 @@ Plugin Name: CSV import wpdatatables
 Plugin URI: http://plugins.rmweblab.com/
 Description: Import CSV to wp datatables
 Author: Anas
-Version: 1.0.0
+Version: 1.0.1
 Author URI: http://rmweblab.com
 Copyright: © 2018 RMWebLab.
 License:     GPL2
@@ -58,6 +58,9 @@ class CSVImportWPDatables {
 
 		//execute data
 		require_once( 'inc/data-import.php' );
+
+		//filter data
+		require_once( 'inc/data-filter.php' );
 
 
 
