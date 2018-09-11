@@ -32,7 +32,7 @@ function wpdatatables_filter_carrier_form(){
 
     <input type="button" value="Search" class="button button-primary button-search-submit"></p>
     <input type="hidden" id="start" value="0" />
-    <input type="hidden" id="limit" value="500" />
+    <input type="hidden" id="limit" value="5" />
     <?php $csvfilter_nonce = wp_create_nonce( "csvfilter_nonce" ); ?>
   </form>
 
@@ -41,7 +41,7 @@ function wpdatatables_filter_carrier_form(){
       jQuery(document).ready(function($) {
           jQuery('.filter-data-loading').hide();
           jQuery('.button-search-submit').click(function() {
-            jQuery('#filter-data-result').html('');
+            //jQuery('#filter-data-result').html('');
             jQuery('.filter-data-loading').show('slow');
               //alert('Hello');
               //return false;
@@ -76,6 +76,9 @@ function wpdatatables_filter_carrier_form(){
                         }
                         //jQuery('#filter-data-result').append(result_data_added);
                         jQuery('#filter-data-result').html(result_data_added);
+                        if(data.more == 'yes'){
+                          jQuery('.load-more-data').show('slow');
+                        }
                         jQuery('.filter-data-loading').delay(300).fadeOut('slow');
                       }else{
                         jQuery('#filter-data-result').html('<span class="error">Not found...</span>');
@@ -91,7 +94,7 @@ function wpdatatables_filter_carrier_form(){
   </script>
 
   <style>
-  .filter-data-loading{ display: none; }
+  .filter-data-loading, .load-more-data{ display: none; }
   </style>
 
   <div class="table-data-wrap">
@@ -103,6 +106,7 @@ function wpdatatables_filter_carrier_form(){
   //echo wpdatatables_display_csv_zip_data($lookup_code, $start, $limit);
   echo '</table>';
   ?>
+  <div class="load-more-data"><a href="javascript:void(0)">Show More</a></div>
   <div class="filter-data-loading"><img src="<?php echo CSVIWPTABLES_URL; ?>/img/30.svg" alt="Uploading..." /></div>
   </div>
 
@@ -158,6 +162,40 @@ function wpdatatables_display_csv_zip_data($zip_code, $sex, $tobacco, $age, $sta
   return $output;
 
 }
+
+
+function wpdatatables_display_csv_zip_check_data($zip_code, $sex, $tobacco, $age, $start = 0, $limit = 100){
+  global $wpdb;
+  $output = '';
+
+  //live
+  $table1 = "wp_wpdatatable_11";
+  $table2 = "wp_wpdatatable_19";
+
+  $sql_q = "SELECT * FROM $table1 as mastertable ";
+  $sql_q .= "INNER JOIN $table2 as ziptable ON mastertable.zipareacode = ziptable.zipareacode ";
+  $sql_q .= " WHERE ziptable.zip5 = $zip_code ";
+  if($sex != ''){
+    $sql_q .= " and mastertable.sex = '$sex' ";
+  }
+  if($tobacco != ''){
+    $sql_q .= " and mastertable.tobacco = '$tobacco' ";
+  }
+  if($age > 40){
+    $sql_q .= " and mastertable.age = $age ";
+  }
+  $sql_q .= " ORDER BY mastertable.wdt_ID DESC LIMIT $start, $limit ";
+
+  $lookup_data = $wpdb->get_results($sql_q);
+
+  if(is_array($lookup_data) && (count($lookup_data) > 0)){
+      return TRUE;
+  }
+
+  return false;
+
+}
+
 function csv_filter_wpdatables_data_callback() {
 
   $start = 0;
@@ -179,7 +217,13 @@ function csv_filter_wpdatables_data_callback() {
 
     $result_data = wpdatatables_display_csv_zip_data($zip_code, $sex, $tobacco, $age, $start, $limit);
 
-		echo json_encode(array("msg" => "Complete", "result_data" => $result_data, "start" => $start, "limit" => $limit, "zip_code" => $zip_code, "sex" => $sex, "tobacco" => $tobacco, "age" => $age));
+    $next_start = $start + $limit;
+    $have_more = '';
+    //if(wpdatatables_display_csv_zip_check_data($zip_code, $sex, $tobacco, $age, $next_start, $limit)){
+        //$have_more = 'yes';
+    //}
+
+		echo json_encode(array("msg" => "Complete", "more" => $have_more, "result_data" => $result_data, "start" => $start, "next_start" => $next_start, "limit" => $limit, "zip_code" => $zip_code, "sex" => $sex, "tobacco" => $tobacco, "age" => $age));
 		exit;
 	}
 
@@ -199,24 +243,3 @@ function wpdatatables_data_csg_filter_shortcode($atts, $content = null) {
 	return '<div class="csg-search-filter-form">'.$csg_filter.'</div>';
 }
 add_shortcode( 'wpdatatables_data_csg_filter', 'wpdatatables_data_csg_filter_shortcode' );
-
-
-// (
-//     [wdt_ID] => 68531
-//     [carrier] => Anthem BCBS of Georgia (Household)
-//     [state] => GEORGIA
-//     [zipareacode] => 30818
-//     [age] => 100
-//     [tobacco] => NO
-//     [sex] => F
-//     [planf] => $235.40
-//     [plang] => $156.55
-//     [plann] => $153.70
-// )
-
-
-// (
-//     [wdt_ID] => 397412
-//     [zipareacode] => 31109
-//     [zip5] => 46384
-// )
