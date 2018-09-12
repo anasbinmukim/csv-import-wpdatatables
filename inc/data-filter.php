@@ -130,6 +130,47 @@ function wpdatatables_filter_carrier_form(){
 }
 
 
+
+function wpdatatables_filter_csg_data_display(){
+  ?>
+  <div class="table-data-wrap">
+  <?php
+  echo '<table class="widefat" id="filter-data-result">';
+
+  //?zip_code={zipcode:7}&sex={Gender::3}&tobacco={Tobacco Use::8}&age={Age::10}
+
+  $zip_code = '';
+  $sex = '';
+  $tobacco = '';
+  $age = '';
+
+  if(isset($_GET['zip_code']) && ($_GET['zip_code'] != '')){
+    $zip_code = $_GET['zip_code'];
+  }
+
+  if(isset($_GET['sex']) && ($_GET['sex'] != '')){
+    $sex = $_GET['sex'];
+  }
+
+  if(isset($_GET['tobacco']) && ($_GET['tobacco'] != '')){
+    $tobacco = $_GET['tobacco'];
+  }
+
+  if(isset($_GET['age']) && ($_GET['age'] != '')){
+    $age = $_GET['age'];
+  }
+
+  $start = 0;
+  $limit = 500;
+  echo wpdatatables_display_csv_zip_data($zip_code, $sex, $tobacco, $age, $start, $limit);
+  echo '</table>';
+  ?>
+  </div>
+
+  <?php
+}
+
+
 function wpdatatables_display_csv_zip_data($zip_code, $sex, $tobacco, $age, $start = 0, $limit = 100){
   global $wpdb;
   $output = '';
@@ -156,12 +197,24 @@ function wpdatatables_display_csv_zip_data($zip_code, $sex, $tobacco, $age, $sta
   //$lookup_data = $wpdb->get_results("SELECT * FROM $table1 as mastertable INNER JOIN $table2 as ziptable ON mastertable.zipareacode = ziptable.zipareacode WHERE ziptable.zip5 = $zip_code ORDER BY mastertable.wdt_ID DESC LIMIT $start, $limit");
   $lookup_data = $wpdb->get_results($sql_q);
 
+  if(isset($_GET['test'])){
+    echo '<pre>';
+    print_r($lookup_data);
+    echo '</pre>';
+    return;
+  }
+
+
   if(is_array($lookup_data) && (count($lookup_data) > 0)){
     $output .= '<thead><tr><th>Carrier</th><th>Plan F</th><th>Plan G</th><th>Plan N</th></tr></thead>';
     foreach ($lookup_data as $key => $zip_value) {
       $output .= '<tr>';
       $output .= '<td>';
-      $output .= $zip_value->carrier;
+      if(strpos($zip_value->carriers, 'http') == 0) {
+          $output .= '<img src="'.$zip_value->carriers.'" alt="" />';
+      }else{
+          $output .= $zip_value->carriers;
+      }
       $output .= '</td>';
       $output .= '<td>';
       $output .= $zip_value->planf;
@@ -186,7 +239,8 @@ function wpdatatables_display_csv_zip_check_data($zip_code, $sex, $tobacco, $age
   $output = '';
 
   //live
-  $table1 = "wp_wpdatatable_11";
+  //$table1 = "wp_wpdatatable_11";
+  $table1 = get_option('zip_csg_filter_data_table');
   $table2 = "wp_wpdatatable_19";
 
   $sql_q = "SELECT * FROM $table1 as mastertable ";
@@ -260,3 +314,15 @@ function wpdatatables_data_csg_filter_shortcode($atts, $content = null) {
 	return '<div class="csg-search-filter-form">'.$csg_filter.'</div>';
 }
 add_shortcode( 'wpdatatables_data_csg_filter', 'wpdatatables_data_csg_filter_shortcode' );
+
+
+
+
+function wpdatatables_data_csg_filter_data_dispaly_shortcode($atts, $content = null) {
+	ob_start();
+  wpdatatables_filter_csg_data_display();
+	$csg_filter = ob_get_contents();
+	ob_end_clean();
+	return '<div class="csg-search-filter-form">'.$csg_filter.'</div>';
+}
+add_shortcode( 'wpdatatables_data_csg_filter_data_display', 'wpdatatables_data_csg_filter_data_dispaly_shortcode' );
