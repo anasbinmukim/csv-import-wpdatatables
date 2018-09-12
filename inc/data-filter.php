@@ -6,7 +6,23 @@ function csv_wpdatatables_submenu_page(){
 
 function csv_wpdatatables_submenu_page_callback(){
   echo '<div class="wrap">';
-  echo '<h2>Search by Zipcodes</h2>';
+  echo '<h2>Zip codes and data table relation</h2>';
+
+  if(isset($_POST['save_filter_data_table']) && isset($_POST['wp_datatables_table'])){
+      update_option('zip_csg_filter_data_table', $_POST['wp_datatables_table']);
+  }
+
+  $table_name = get_option('zip_csg_filter_data_table');
+
+  ?>
+  <form action="" method="post">
+    <p>Zip Table: <code>wp_wpdatatable_19</code></p>
+    <p>Data Table: <?php get_wpdatables_tables_dropdown($table_name); ?></p>
+    <p><input type="submit" name="save_filter_data_table"  class="button button-primary" value="Save"></p>
+  </form>
+
+  <br /><br /><br />
+  <?php
 
   wpdatatables_filter_carrier_form();
 
@@ -119,7 +135,8 @@ function wpdatatables_display_csv_zip_data($zip_code, $sex, $tobacco, $age, $sta
   $output = '';
 
   //live
-  $table1 = "wp_wpdatatable_11";
+  //$table1 = "wp_wpdatatable_11";
+  $table1 = get_option('zip_csg_filter_data_table');
   $table2 = "wp_wpdatatable_19";
 
   $sql_q = "SELECT * FROM $table1 as mastertable ";
